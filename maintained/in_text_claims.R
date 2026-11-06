@@ -33,8 +33,8 @@ cell <- function(panel_id, facet_name, item_name, party_name) {
   hit$estimate
 }
 
-specification <- function(party_name, is_weighted) {
-  hit <- specifications |> filter(party == party_name, weighted == is_weighted)
+specification <- function(party_name) {
+  hit <- specifications |> filter(party == party_name, survey == 2014, weighted)
   stopifnot(nrow(hit) == 1)
   hit$estimate
 }
@@ -96,24 +96,23 @@ claim("s1_other_issues_closer", as.numeric(all(closer$closer)),
 # a candidate who is more conservative."
 # covers: s2_republicans_more_conservative
 claim("s2_republicans_more_conservative",
-      as.numeric(specification("Republican", FALSE) < 0 && specification("Republican", TRUE) < 0),
-      "Republicans' estimate is negative, weighted and unweighted")
+      as.numeric(specification("Republican") < 0),
+      "Republicans' 2014 weighted estimate is negative")
 
 # "When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a
 # candidate who is less liberal."
 # covers: s2_democrats_less_liberal
 claim("s2_democrats_less_liberal",
-      as.numeric(specification("Democrat", FALSE) > 0 && specification("Democrat", TRUE) > 0),
-      "Democrats' estimate is positive, weighted and unweighted")
+      as.numeric(specification("Democrat") > 0),
+      "Democrats' 2014 weighted estimate is positive")
 
 # "Surprisingly (to me at least), subjects of both parties want more moderate candidates when
 # the Republicans are in the majority and more extreme candidates when the Democrats are in the
 # majority."
 # covers: s2_both_more_moderate_republican_majority
 claim("s2_both_more_moderate_republican_majority",
-      as.numeric(specification("Democrat", FALSE) < 0 && specification("Democrat", TRUE) < 0 &&
-                   specification("Republican", FALSE) > 0 && specification("Republican", TRUE) > 0),
-      "Democrats' estimate negative and Republicans' positive, weighted and unweighted")
+      as.numeric(specification("Democrat") < 0 && specification("Republican") > 0),
+      "Democrats' 2014 weighted estimate negative and Republicans' positive")
 
 # Study 3 ----
 # "The pattern here is that partisans express more dislike for foods favored by out-party

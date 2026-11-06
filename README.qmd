@@ -50,14 +50,14 @@ specifications <- read_csv(here::here("maintained", "output", "figure_1b_specifi
 This repository recomputes Figure 1 and checks the prose of a four-page review article, which reanalyzes five survey experiments from *The Power of Partisanship* (Dyck and Pearson-Merkowitz 2023). The review deposited no code and no data. Its data are the book's, from the UNC Dataverse collection, and are released under CC0.
 
 - **Panels (a), (c), and (e) reproduce.** `r sum(plotted$panel != "b" & plotted$match_rewrite == 1)` of `r sum(plotted$panel != "b")` plotted values agree within 0.0005. The largest gaps are `r sprintf("%.4f", fit(c("a", "c", "e"), "estimate"))` on estimates and `r sprintf("%.4f", fit(c("a", "c", "e"), "interval"))` on interval ends. **The specifications behind that agreement were inferred from the plotted positions**, so it shows that this rewrite finds what was plotted. It is not an independent check that the specifications are the right ones. The panels use three different weight and party codings, which the article does not state.
-- **Panel (b) does not reproduce, and p. 3 contradicts itself.** See [Errata](#errata).
+- **Panel (b) reproduces from the 2014 survey, and p. 3 contradicts itself.** The review's script for the panel, `chapter_3_chamberrcontrol.R`, is in the project archive and in no deposit. This repo's rewrite follows it, and `r sum(plotted$panel == "b" & plotted$match_rewrite == 1)` of `r sum(plotted$panel == "b")` plotted values agree within 0.0005. See [Errata](#errata).
 - **Panel (d) is not compared.** See [Figure verification](#figure-verification).
 - **The deposit's Stata files were not run**, because Stata is not available here. `value_script` and `match` are NA throughout, so this repo has no archive-versus-page comparison.
 
 | Link | |
 |---|---|
 | Article | [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037) |
-| Data collection | UNC Dataverse, datasets listed in `original_manifest.csv` |
+| Data collection | UNC Dataverse, datasets listed in `original_manifest.csv`; the 2014 survey from the project archive, so a stranger cannot fetch it (`download_original.R`) |
 | Errata | `coppock_2025_errata.pdf` |
 
 To reproduce, run `Rscript run_all.R`. It fetches the 11 deposited files, verifies them against `original_manifest.csv` on MD5 and byte size, recomputes the figure, builds the ground truth, and runs the gate. The figure positions come from `ground_truth/extract_figure_1.py`, which needs the article PDF as an argument. The PDF is not redistributed here.
@@ -71,7 +71,7 @@ errata.qmd, coppock_2025_errata.pdf          corrections to the article
 
 # Paper overview
 
-The review argues that the book's experiments estimate the effects of party cues and of chamber control, which do not manipulate the book's main causal variable. Study 1 and Study 2 use the 2018 survey, Study 3 the 2017 survey, Study 4 the 2020 survey, and Study 5 the 2019 survey.
+The review argues that the book's experiments estimate the effects of party cues and of chamber control, which do not manipulate the book's main causal variable. Study 1 uses the 2018 survey, Study 2 the 2014 survey, Study 3 the 2017 survey, Study 4 the 2020 survey, and Study 5 the 2019 survey.
 
 The 2018 survey holds free-text responses in `Q149`, one of which includes a respondent's email address. Nothing in this repo reads or redistributes that column, and the file comes from the public deposit rather than from this repo.
 
@@ -83,7 +83,7 @@ The review itself has nothing to run. The book's Stata files are in `original/` 
 
 `coppock_2025_errata.pdf` carries two entries, defined in `errata.qmd` and written to `errata_entries.csv`.
 
-1. **Study 2, in note form.** The first two Study 2 sentences and the third cannot both hold. Figure 1(b) supports the third, while the survey supports the first two (Democrats `r sprintf("%.3f", specifications$estimate[specifications$party == "Democrat" & specifications$weighted])` weighted and `r sprintf("%.3f", specifications$estimate[specifications$party == "Democrat" & !specifications$weighted])` unweighted, Republicans `r sprintf("%.3f", specifications$estimate[specifications$party == "Republican" & specifications$weighted])` and `r sprintf("%.3f", specifications$estimate[specifications$party == "Republican" & !specifications$weighted])`). Swapped labels would explain the mark labeled Republican and leave the mark labeled Democrat unexplained. The original figure script was not found, so the cause is open and the entry corrects nothing.
+1. **Study 2, in note form.** The first two Study 2 sentences contradict the third and Figure 1(b), which agree with each other and with the 2014 survey (Republicans `r sprintf("%.3f", specifications$estimate[specifications$party == "Republican" & specifications$survey == 2014 & specifications$weighted])`, Democrats `r sprintf("%.3f", specifications$estimate[specifications$party == "Democrat" & specifications$survey == 2014 & specifications$weighted])`). The first two would agree if they read "less conservative" and "more liberal". The repeat in the 2018 survey has the opposite signs, and the review does not plot it. All these intervals cover zero.
 2. **A dropped verb in Study 3.** "whether they given no cue" should read "whether they are given no cue".
 
 # The extraction and the two instruments
@@ -123,7 +123,7 @@ plotted |>
   kable(col.names = c("Panel", "Values", "Within 0.0005", "Largest estimate gap", "Largest interval gap"))
 ```
 
-The tolerance is set once in `build_ground_truth.R` and is half of the third decimal. It is wider than the largest gap in the panels that reproduce, and no precision of the marks was measured independently. Panel (b)'s row compares with the unweighted difference in means, which is the specification of panels (a) and (c). `maintained/output/figure_1b_specifications.csv` also reports the weighted one.
+The tolerance is set once in `build_ground_truth.R` and is half of the third decimal. It is wider than the largest gap in the panels that reproduce, and no precision of the marks was measured independently. Panel (b)'s row compares with the weighted difference in means on the 2014 survey, as the review's script computes it. `maintained/output/figure_1b_specifications.csv` also reports the unweighted one and both on the 2018 repeat.
 
 # Maintained rewrite
 
@@ -132,7 +132,7 @@ The tolerance is set once in `build_ground_truth.R` and is half of the third dec
 | Panel | Study | Survey | Weights | Party |
 |---|---|---|---|---|
 | a | 1 | 2018 | none | pid7, 1 to 3 and 5 to 7 |
-| b | 2 | 2018 | not settled | not settled |
+| b | 2 | 2014 | survey | pid7, 1 to 3 and 5 to 7 |
 | c | 3 | 2017 | none | pid7, 1 to 3 and 5 to 7 |
 | d | 4 | 2020 | none | pid7, slopes and cue means only |
 | e | 5 | 2019 | survey | pid3, 1 and 2 |

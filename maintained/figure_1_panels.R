@@ -2,10 +2,11 @@
 # Output: maintained/output/figure_1_estimates.csv, figure_1b_specifications.csv,
 #   figure_1d_slopes.csv
 # Depends on: original/, maintained/helpers.R
-# Description: Recompute Figure 1 from the book's surveys: Study 1 (2018), Study 2 (2018),
+# Description: Recompute Figure 1 from the book's surveys: Study 1 (2018), Study 2 (2014),
 #   Study 3 (2017), Study 4 (2020), and Study 5 (2019). The review's own code is not deposited,
 #   so the specification of each panel is inferred, and is tested against the plotted positions
-#   in ground_truth/figure_1_plotted.csv by ground_truth/build_ground_truth.R.
+#   in ground_truth/figure_1_plotted.csv by ground_truth/build_ground_truth.R. Panel b follows
+#   chapter_3_chamberrcontrol.R in the review's project archive, which reads the 2014 survey.
 
 source(here::here("maintained", "helpers.R"))
 
@@ -27,29 +28,46 @@ study_1 <- imap(issues, \(q, item) {
     mutate(panel = "a", item = item)
 }) |> list_rbind()
 
-# Study 2: chamber control. Form a says Republicans hold 40%, form b that Democrats do ----
-study_2_frame <- d18 |>
+# Study 2: chamber control, 2014. Form a says Republicans hold 40%, form b that Democrats do ----
+d14 <- read_survey("UMAS0014_OUTPUT-3 with knowledge codes.dta")
+
+study_2_frame <- d14 |>
   transmute(
-    y = unasked(if_else(q401treat == 1, as.numeric(Q401a), as.numeric(Q401b)), 5),
-    condition = as.numeric(q401treat),
-    pid7 = as.numeric(pid7),
-    party = party_of(pid7),
+    y = unasked(coalesce(as.numeric(Q58a), as.numeric(Q58b)), 5),
+    condition = as.numeric(Q58_rand),
+    party = party_of(as.numeric(pid7)),
     weight = as.numeric(weight)
   )
 
-study_2 <- cate(study_2_frame, 2, 1) |>
+study_2 <- cate(study_2_frame, 2, 1, weights = "weight") |>
   mutate(panel = "b", facet = "Republicans control 60%", item = "chamber")
 
+# The same design was fielded again in 2018 (Q401). The review does not plot it, and it is kept
+# because its signs are the reverse of 2014's.
+repeat_2018_frame <- d18 |>
+  transmute(
+    y = unasked(if_else(q401treat == 1, as.numeric(Q401a), as.numeric(Q401b)), 5),
+    condition = as.numeric(q401treat),
+    party = party_of(as.numeric(pid7)),
+    weight = as.numeric(weight)
+  )
+
 # The two sentences' seat shares and the scale's direction, at the point of use.
-stopifnot(str_detect(attr(d18$Q401a, "label"), "^Republican Party .* 40%"),
+stopifnot(str_detect(attr(d14$Q58a, "label"), "^R 40% D 60%"),
+          str_detect(attr(d14$Q58b, "label"), "^D 40% R 60%"),
+          str_detect(names(attr(d14$Q58a, "labels"))[1], "^Republican .* conservative"),
+          str_detect(names(attr(d14$Q58a, "labels"))[5], "^Democratic .* liberal"),
+          str_detect(attr(d18$Q401a, "label"), "^Republican Party .* 40%"),
           str_detect(attr(d18$Q401b, "label"), "^Democratic Party .* 40%"),
           str_detect(names(attr(d18$Q401a, "labels"))[1], "^a Republican .* conservative"),
           str_detect(names(attr(d18$Q401a, "labels"))[5], "^a Democratic .* liberal"))
 
-# No single specification reproduces panel b, so the search is an output and not a footnote.
+# Panel b is the 2014 weighted row. The others are reported for comparison.
 specifications <- bind_rows(
-  cate(study_2_frame, 2, 1) |> mutate(weighted = FALSE),
-  cate(study_2_frame, 2, 1, weights = "weight") |> mutate(weighted = TRUE)
+  cate(study_2_frame, 2, 1, weights = "weight") |> mutate(survey = 2014, weighted = TRUE),
+  cate(study_2_frame, 2, 1) |> mutate(survey = 2014, weighted = FALSE),
+  cate(repeat_2018_frame, 2, 1, weights = "weight") |> mutate(survey = 2018, weighted = TRUE),
+  cate(repeat_2018_frame, 2, 1) |> mutate(survey = 2018, weighted = FALSE)
 )
 write_output(specifications, "figure_1b_specifications.csv")
 

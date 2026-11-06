@@ -31,6 +31,19 @@ walk2(
   \(url, path) download.file(url, destfile = path, mode = "wb", quiet = TRUE)
 )
 
+# Study 2 is the book's 2014 survey. It is not in this manifest's datasets, and whether the
+# collection holds it was not established, since the Dataverse search API refuses anonymous
+# queries. This copy comes from the review's project archive, so a stranger cannot fetch it.
+survey_2014 <- "UMAS0014_OUTPUT-3 with knowledge codes.dta"
+survey_2014_source <- file.path(
+  "~/Library/CloudStorage/Dropbox/archived_projects/coppock_2025/original_materials",
+  "2014 UML YouGov Survey", survey_2014
+)
+if (!file.exists(here::here("original", survey_2014))) {
+  stopifnot(file.copy(path.expand(survey_2014_source), here::here("original", survey_2014)))
+}
+stopifnot(unname(tools::md5sum(here::here("original", survey_2014))) == "840f103137191d70bfd192be2591b071")
+
 verified <- planned |>
   mutate(md5_ok = unname(tools::md5sum(path)) == md5_served,
          bytes_ok = file.size(path) == bytes,
@@ -42,7 +55,7 @@ stopifnot(all(verified$md5_ok), all(verified$bytes_ok))
 # it a stray dotfile passes unseen.
 extra <- setdiff(
   list.files(here::here("original"), recursive = TRUE, all.files = TRUE, no.. = TRUE),
-  manifest$file
+  c(manifest$file, survey_2014)
 )
 if (length(extra) > 0) stop("original/ holds unlisted files: ", str_c(extra, collapse = ", "))
 

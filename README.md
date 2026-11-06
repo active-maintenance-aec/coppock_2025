@@ -29,8 +29,11 @@ collection, and are released under CC0.
   rewrite finds what was plotted. It is not an independent check that
   the specifications are the right ones. The panels use three different
   weight and party codings, which the article does not state.
-- **Panel (b) does not reproduce, and p. 3 contradicts itself.** See
-  [Errata](#errata).
+- **Panel (b) reproduces from the 2014 survey, and p. 3 contradicts
+  itself.** The review’s script for the panel,
+  `chapter_3_chamberrcontrol.R`, is in the project archive and in no
+  deposit. This repo’s rewrite follows it, and 6 of 6 plotted values
+  agree within 0.0005. See [Errata](#errata).
 - **Panel (d) is not compared.** See [Figure
   verification](#figure-verification).
 - **The deposit’s Stata files were not run**, because Stata is not
@@ -40,7 +43,7 @@ collection, and are released under CC0.
 | Link |  |
 |----|----|
 | Article | [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037) |
-| Data collection | UNC Dataverse, datasets listed in `original_manifest.csv` |
+| Data collection | UNC Dataverse, datasets listed in `original_manifest.csv`; the 2014 survey from the project archive, so a stranger cannot fetch it (`download_original.R`) |
 | Errata | `coppock_2025_errata.pdf` |
 
 To reproduce, run `Rscript run_all.R`. It fetches the 11 deposited
@@ -58,8 +61,9 @@ needs the article PDF as an argument. The PDF is not redistributed here.
 
 The review argues that the book’s experiments estimate the effects of
 party cues and of chamber control, which do not manipulate the book’s
-main causal variable. Study 1 and Study 2 use the 2018 survey, Study 3
-the 2017 survey, Study 4 the 2020 survey, and Study 5 the 2019 survey.
+main causal variable. Study 1 uses the 2018 survey, Study 2 the 2014
+survey, Study 3 the 2017 survey, Study 4 the 2020 survey, and Study 5
+the 2019 survey.
 
 The 2018 survey holds free-text responses in `Q149`, one of which
 includes a respondent’s email address. Nothing in this repo reads or
@@ -78,13 +82,12 @@ manifest. The maintained code is a rewrite in R from the deposited
 `coppock_2025_errata.pdf` carries two entries, defined in `errata.qmd`
 and written to `errata_entries.csv`.
 
-1.  **Study 2, in note form.** The first two Study 2 sentences and the
-    third cannot both hold. Figure 1(b) supports the third, while the
-    survey supports the first two (Democrats 0.212 weighted and 0.067
-    unweighted, Republicans -0.049 and -0.045). Swapped labels would
-    explain the mark labeled Republican and leave the mark labeled
-    Democrat unexplained. The original figure script was not found, so
-    the cause is open and the entry corrects nothing.
+1.  **Study 2, in note form.** The first two Study 2 sentences
+    contradict the third and Figure 1(b), which agree with each other
+    and with the 2014 survey (Republicans 0.212, Democrats -0.121). The
+    first two would agree if they read “less conservative” and “more
+    liberal”. The repeat in the 2018 survey has the opposite signs, and
+    the review does not plot it. All these intervals cover zero.
 2.  **A dropped verb in Study 3.** “whether they given no cue” should
     read “whether they are given no cue”.
 
@@ -110,16 +113,15 @@ whether the inferred specification is the one the review used.
 
 # Coverage
 
-| Claim type   | Verdict        | Rows |
-|:-------------|:---------------|-----:|
-| definitional | no verdict     |    2 |
-| descriptive  | does not hold  |    1 |
-| descriptive  | holds          |    8 |
-| descriptive  | no verdict     |    2 |
-| pipeline     | does not match |    6 |
-| pipeline     | matches        |  108 |
-| structural   | no verdict     |    5 |
-| transcribed  | no verdict     |    7 |
+| Claim type   | Verdict       | Rows |
+|:-------------|:--------------|-----:|
+| definitional | no verdict    |    2 |
+| descriptive  | does not hold |    2 |
+| descriptive  | holds         |    7 |
+| descriptive  | no verdict    |    2 |
+| pipeline     | matches       |  114 |
+| structural   | no verdict    |    5 |
+| transcribed  | no verdict    |    7 |
 
 **The nine descriptive verdicts are about direction.** Study 2’s first
 two sentences hold in sign while every interval covers zero. In Study 1,
@@ -140,17 +142,17 @@ reason. Footnote 3’s citation was checked against Crossref on
 | Panel | Values | Within 0.0005 | Largest estimate gap | Largest interval gap |
 |:------|-------:|--------------:|:---------------------|:---------------------|
 | a     |     48 |            48 | 0.0001               | 0.0002               |
-| b     |      6 |             0 | 0.2575               | 0.2948               |
+| b     |      6 |             6 | 0.0000               | 0.0000               |
 | c     |     48 |            48 | 0.0001               | 0.0002               |
 | e     |     12 |            12 | 0.0000               | 0.0002               |
 
 The tolerance is set once in `build_ground_truth.R` and is half of the
 third decimal. It is wider than the largest gap in the panels that
 reproduce, and no precision of the marks was measured independently.
-Panel (b)’s row compares with the unweighted difference in means, which
-is the specification of panels (a) and (c).
+Panel (b)’s row compares with the weighted difference in means on the
+2014 survey, as the review’s script computes it.
 `maintained/output/figure_1b_specifications.csv` also reports the
-weighted one.
+unweighted one and both on the 2018 repeat.
 
 # Maintained rewrite
 
@@ -158,13 +160,13 @@ weighted one.
 difference in means between cue and no cue within party. The
 specifications are as follows.
 
-| Panel | Study | Survey | Weights     | Party                           |
-|-------|-------|--------|-------------|---------------------------------|
-| a     | 1     | 2018   | none        | pid7, 1 to 3 and 5 to 7         |
-| b     | 2     | 2018   | not settled | not settled                     |
-| c     | 3     | 2017   | none        | pid7, 1 to 3 and 5 to 7         |
-| d     | 4     | 2020   | none        | pid7, slopes and cue means only |
-| e     | 5     | 2019   | survey      | pid3, 1 and 2                   |
+| Panel | Study | Survey | Weights | Party                           |
+|-------|-------|--------|---------|---------------------------------|
+| a     | 1     | 2018   | none    | pid7, 1 to 3 and 5 to 7         |
+| b     | 2     | 2014   | survey  | pid7, 1 to 3 and 5 to 7         |
+| c     | 3     | 2017   | none    | pid7, 1 to 3 and 5 to 7         |
+| d     | 4     | 2020   | none    | pid7, slopes and cue means only |
+| e     | 5     | 2019   | survey  | pid3, 1 and 2                   |
 
 The script asserts the survey’s 40 percent labels and the direction of
 the candidate scale at the point of use.

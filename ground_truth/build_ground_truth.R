@@ -65,6 +65,7 @@ means <- study_4 |>
 slopes <- study_4 |> filter(quantity == "cost_slope")
 
 study_2_signs <- specifications |>
+  filter(survey == 2014, weighted) |>
   group_by(party) |>
   summarise(all_negative = all(estimate < 0), all_positive = all(estimate > 0))
 own_majority <- deframe(select(study_2_signs, party, all_negative))
@@ -109,9 +110,9 @@ unscored_rows <- tibble(
 # Assembly, with the locus rule ----
 source_notes <- c(
   s1_two_thirds_pattern = "All four signs hold. The Republican cue's interval for Republicans covers zero, which sits uneasily with 'clear evidence' and is not a wrong sign.",
-  s2_both_more_moderate_republican_majority = "False on the 2018 survey and supported by Figure 1(b)'s marks; see errata entry 1 and review queue row 8.",
-  s2_republicans_more_conservative = "Sign holds, weighted and unweighted; the intervals cover zero. Figure 1(b)'s printed Republican mark has the opposite sign.",
-  s2_democrats_less_liberal = "Sign holds, weighted and unweighted; the intervals cover zero. Figure 1(b)'s printed Democrat mark has the opposite sign.",
+  s2_both_more_moderate_republican_majority = "Holds on the 2014 survey, weighted, which is Figure 1(b)'s data; the intervals cover zero.",
+  s2_republicans_more_conservative = "False on the 2014 survey, weighted, the data of Figure 1(b), which has the opposite sign; the intervals cover zero. See errata entry 1.",
+  s2_democrats_less_liberal = "False on the 2014 survey, weighted, the data of Figure 1(b), which has the opposite sign; the intervals cover zero. See errata entry 1.",
   abstract_cue_pattern = "A summary with no stated scope, so the share is reported without a verdict.",
   intro_same_estimates = "Not tested: this repo holds no copy of the book's printed estimates.",
   book_quote_page = "The book is not in this repo; unchecked.",
@@ -136,13 +137,11 @@ ground_truth <- claims |>
     value_script = NA_real_,
     match = NA_real_,
     defect_locus = case_when(
-      str_detect(claim_id, "^f1_b_") ~ "unresolved",
       (!is.na(match_rewrite) & match_rewrite == 0) | (!is.na(holds) & holds == 0) ~ "unresolved",
       .default = NA_character_
     ),
     notes = case_when(
       claim_id %in% names(source_notes) ~ source_notes[claim_id],
-      str_detect(claim_id, "^f1_b_") ~ "Panel b reproduces under no specification tried; see errata entry 1 and figure_1b_specifications.csv.",
       !needs_block ~ "No counterpart in the pipeline.",
       .default = NA_character_
     )
@@ -156,8 +155,8 @@ clean <- !is.na(ground_truth$match_rewrite) & ground_truth$match_rewrite == 1
 stopifnot(all(!is.na(ground_truth$defect_locus[adverse])),
           all(is.na(ground_truth$defect_locus[clean])))
 
-# Every cell outside panel b has to match, or the inferred specification no longer holds.
-stopifnot(all(ground_truth$match_rewrite[str_detect(ground_truth$claim_id, "^f1_(a|c|e)_")] == 1))
+# Every cell has to match, or the inferred specification no longer holds.
+stopifnot(all(ground_truth$match_rewrite[str_detect(ground_truth$claim_id, "^f1_(a|b|c|e)_")] == 1))
 
 write_csv(ground_truth, here::here("ground_truth", "coppock_2025_ground_truth.csv"), na = "NA")
 
