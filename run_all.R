@@ -1,8 +1,21 @@
 # coppock_2025/run_all.R
-# Runs the reproduction in order: fetch and verify the deposit, then recompute Figure 1.
+# Runs the reproduction in order: fetch and verify the deposit, recompute Figure 1, build the
+# ground truth, run the gate, and print the in-text claims.
 
 library(here)
 here::i_am("run_all.R")
 
 source(here::here("download_original.R"))
 source(here::here("maintained", "figure_1_panels.R"))
+
+# Ground truth ----
+# The build ends by running ground_truth/claims_gate.R, which sources in_text_claims.R and
+# halts if a published quantity has lost its block or the two instruments disagree.
+source(here::here("ground_truth", "build_ground_truth.R"))
+
+# In-text claims, printed for a reader ----
+source(here::here("maintained", "in_text_claims.R"), local = new.env())
+
+# Deposited files, again ----
+# Nothing above writes to original/, and this second pass shows it.
+source(here::here("download_original.R"))

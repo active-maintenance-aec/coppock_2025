@@ -40,6 +40,12 @@ study_2_frame <- d18 |>
 study_2 <- cate(study_2_frame, 2, 1) |>
   mutate(panel = "b", facet = "Republicans control 60%", item = "chamber")
 
+# The two sentences' seat shares and the scale's direction, at the point of use.
+stopifnot(str_detect(attr(d18$Q401a, "label"), "^Republican Party .* 40%"),
+          str_detect(attr(d18$Q401b, "label"), "^Democratic Party .* 40%"),
+          str_detect(names(attr(d18$Q401a, "labels"))[1], "^a Republican .* conservative"),
+          str_detect(names(attr(d18$Q401a, "labels"))[5], "^a Democratic .* liberal"))
+
 # No single specification reproduces panel b, so the search is an output and not a footnote.
 specifications <- bind_rows(
   cate(study_2_frame, 2, 1) |> mutate(weighted = FALSE),

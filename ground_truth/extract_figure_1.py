@@ -4,7 +4,7 @@
 # Description: Read the plotted positions of Figure 1's panels a, b, c, and e out of the PDF's
 #   vector marks, converting each to data units through that panel's own axis ticks. These
 #   are the published values, so the extraction takes nothing from the data. Panel d's
-#   points and ribbons are not read, for the reason given in README.
+#   points and ribbons are not read; the README says why.
 import csv
 import sys
 

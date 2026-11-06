@@ -1,0 +1,109 @@
+---
+title: "Errata"
+subtitle: "On Coppock (2025), *Political Science Quarterly*"
+format:
+  pdf:
+    output-file: coppock_2025_errata.pdf
+    geometry: margin=1.25in
+    fontsize: 11pt
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(here)
+library(tidyverse)
+here::i_am("errata.qmd")
+
+fmt <- function(x) sprintf("%.3f", x)
+
+# Entry 1's survey estimates are read from the maintained pipeline's output, never typed.
+specifications <- read_csv(here("maintained", "output", "figure_1b_specifications.csv"),
+                           show_col_types = FALSE)
+study_2 <- function(party_name, is_weighted) {
+  hit <- specifications |> filter(party == party_name, weighted == is_weighted)
+  stopifnot(nrow(hit) == 1)
+  hit
+}
+
+# The note says each of these holds, so it stops rendering if one no longer does.
+stopifnot(
+  study_2("Democrat", TRUE)$estimate > 0, study_2("Democrat", FALSE)$estimate > 0,
+  study_2("Republican", TRUE)$estimate < 0, study_2("Republican", FALSE)$estimate < 0,
+  all(specifications$conf_low < 0), all(specifications$conf_high > 0)
+)
+
+# The printed marks are the published values, read from the PDF by extract_figure_1.py.
+plotted <- read_csv(here("ground_truth", "figure_1_plotted.csv"), show_col_types = FALSE) |>
+  filter(panel == "b")
+printed <- function(group) plotted$estimate[plotted$printed_group == group]
+stopifnot(abs(printed("printed_republican") - study_2("Democrat", TRUE)$estimate) < 0.001)
+```
+
+```{r entries}
+# THE ERRATA SPINE. Every entry is defined once, here, and rendered from here: into this
+# document, and into whatever else reads the errata_entries.csv written at the bottom of this
+# file. [[...]] marks the span that changes.
+#
+# Numbering is APPEND-ONLY once this note is published: a later finding is added at the end
+# and never interleaved.
+#
+# Entry 1 is a note: the page and the deposit cannot settle the intended text (review queue
+# row 8), so its corrected field is NA and it corrects nothing. No entry corrects a quantity,
+# so corrected_values is NA throughout.
+figure_ids <- expand_grid(party = c("democrat", "republican"), statistic = c("est", "low", "high")) |>
+  mutate(id = str_glue("f1_b_republicans_control_60_chamber_{party}_{statistic}")) |>
+  pull(id)
+
+entries <- tribble(
+  ~entry, ~class, ~source, ~form, ~title, ~location, ~published, ~corrected, ~note, ~claim_ids, ~corrected_values,
+
+  1, "description", "reading", "note",
+  "Study 2's three sentences contradict each other, and Figure 1(b) sides with the third",
+  "published p. 2, Figure 1(b); p. 3, the paragraph on Study 2",
+  "When their party controls 60 percent of seats (compared with 40 percent), Republicans prefer a candidate who is more conservative. When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a candidate who is less liberal. Surprisingly (to me at least), subjects of both parties want more moderate candidates when the Republicans are in the majority and more extreme candidates when the Democrats are in the majority.",
+  NA_character_,
+  str_glue("The first two sentences put both parties' subjects further from the center when Republicans hold the majority: Republicans turn more conservative and Democrats more liberal. The third says the reverse. Figure 1(b) agrees with the third. Its scale runs from 1 = Extreme Republican to 5 = Extreme Democrat, and it plots Republican at {fmt(printed('printed_republican'))} and Democrat at {fmt(printed('printed_democrat'))}. The 2018 survey agrees with the first two. Democrats (1 to 3 on the seven-point scale) come to {fmt(study_2('Democrat', TRUE)$estimate)} weighted and {fmt(study_2('Democrat', FALSE)$estimate)} unweighted, Republicans (5 to 7) to {fmt(study_2('Republican', TRUE)$estimate)} and {fmt(study_2('Republican', FALSE)$estimate)}, and all four intervals cover zero. Swapped labels in Figure 1(b) would explain part of this, since the weighted Democratic estimate lies within 0.001 of the mark labeled Republican. The mark labeled Democrat is unexplained: none of the specifications we tried gives it credibly. We therefore cannot say which sentence is wrong or why, and this item corrects nothing."),
+  str_c(c("s2_both_more_moderate_republican_majority", figure_ids), collapse = ";"),
+  NA_character_,
+
+  2, "wording", "reading", "brief",
+  "A dropped verb in the description of Study 3",
+  "published p. 3, the paragraph on Study 3",
+  "here the authors ask subjects how much they like various foods and the treatments are whether they given no cue or are told the food is one of President Trump’s or President Obama’s favorites.",
+  "here the authors ask subjects how much they like various foods and the treatments are whether they [[are]] given no cue or are told the food is one of President Trump’s or President Obama’s favorites.",
+  "",
+  "",
+  NA_character_
+) |>
+  mutate(across(c(title, published, corrected, note, claim_ids, corrected_values), as.character))
+
+stopifnot(nrow(entries) == max(entries$entry), !anyDuplicated(entries$entry),
+          all(is.na(entries$corrected) == (entries$form == "note")),
+          all(is.na(entries$corrected_values)),
+          !any(entries$class == "quantity"))
+
+bold <- function(x) str_replace_all(x, "\\[\\[(.*?)\\]\\]", "**\\1**")
+
+# A heading is only a heading when a blank line precedes it, which is why every emitted entry
+# opens with one.
+emit_entry <- function(n) {
+  e <- entries |> filter(entry == n)
+  cat("\n\n## ", e$entry, ". ", e$title, "\n\nPublished, ",
+      str_remove(e$location, "^published "), ":\n\n> ", bold(e$published), sep = "")
+  if (e$form != "note") cat("\n\nCorrected:\n\n> ", bold(e$corrected), sep = "")
+  cat("\n\n", e$note, "\n", sep = "")
+}
+```
+
+This note lists one correction and one unresolved contradiction in "The Effects of Party Cues Are Not the Effects of Partisanship," published in *Political Science Quarterly*, advance access 2 April 2025, doi [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037). Page numbers are those of the advance access version. **The unresolved item concerns the direction of the estimates in Study 2, one of the review's five experiments.** The review's argument concerns what the experiments manipulate, and it does not rest on that direction.
+
+The review has no deposit of its own. The survey estimates below come from the data the book's authors released on the UNC Dataverse, recomputed in this note's repository. Figure 1's published values were read from the marks in the article's PDF. Panels (a), (c), and (e) reproduce from those data, using specifications inferred from the marks themselves.
+
+```{r article-entries, results="asis"}
+walk(entries$entry, emit_entry)
+```
+
+```{r emit-spine}
+# The machine-readable spine. Anything else that needs these entries reads it.
+write_csv(entries, here("errata_entries.csv"))
+```
