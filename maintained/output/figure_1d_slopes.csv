@@ -1,0 +1,9 @@
+party,quantity,group,estimate,conf_low,conf_high
+Democrat,cost_slope,all,-0.030810983397190222,-0.04554389854426633,-0.01607806825011411
+Republican,cost_slope,all,-0.005821831794029516,-0.028325040736953633,0.016681377148894602
+Democrat,cue_mean,Biden Treatment,0.7880794701986754,NA,NA
+Democrat,cue_mean,Control,0.7117117117117117,NA,NA
+Democrat,cue_mean,Trump Treatment,0.6208333333333333,NA,NA
+Republican,cue_mean,Biden Treatment,0.2894736842105263,NA,NA
+Republican,cue_mean,Control,0.4417344173441734,NA,NA
+Republican,cue_mean,Trump Treatment,0.5536723163841808,NA,NA
