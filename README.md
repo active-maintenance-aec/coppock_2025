@@ -82,12 +82,13 @@ manifest. The maintained code is a rewrite in R from the deposited
 `coppock_2025_errata.pdf` carries two entries, defined in `errata.qmd`
 and written to `errata_entries.csv`.
 
-1.  **Study 2, in note form.** The first two Study 2 sentences
-    contradict the third and Figure 1(b), which agree with each other
-    and with the 2014 survey (Republicans 0.212, Democrats -0.121). The
-    first two would agree if they read “less conservative” and “more
-    liberal”. The repeat in the 2018 survey has the opposite signs, and
-    the review does not plot it. All these intervals cover zero.
+1.  **Study 2, corrected.** The first two Study 2 sentences contradicted
+    the third and Figure 1(b), which agree with each other and with the
+    2014 survey (Republicans 0.212, Democrats -0.121). The entry
+    corrects them to “less conservative” and “more liberal” (review
+    queue row 64, 2026-11-07). The repeat in the 2018 survey has the
+    opposite signs, and the review does not plot it. All these intervals
+    cover zero.
 2.  **A dropped verb in Study 3.** “whether they given no cue” should
     read “whether they are given no cue”.
 

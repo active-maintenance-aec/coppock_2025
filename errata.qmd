@@ -49,18 +49,18 @@ stopifnot(abs(printed("printed_republican") - study_2("Republican")$estimate) < 
 # Numbering is APPEND-ONLY once this note is published: a later finding is added at the end
 # and never interleaved.
 #
-# Entry 1 is a note until Alex rules on review queue row 64, so its corrected field is NA and it
-# corrects nothing. No entry corrects a quantity, so corrected_values is NA throughout.
+# Entry 1 was a note until Alex ruled on review queue row 64 (2026-11-07: correct the first two
+# sentences). No entry corrects a quantity, so corrected_values is NA throughout.
 
 entries <- tribble(
   ~entry, ~class, ~source, ~form, ~title, ~location, ~published, ~corrected, ~note, ~claim_ids, ~corrected_values,
 
-  1, "description", "reading", "note",
-  "The first two sentences on Study 2 contradict the third and Figure 1(b)",
+  1, "description", "reading", "brief",
+  "The first two sentences on Study 2 state the reverse of the third and of Figure 1(b)",
   "published p. 2, Figure 1(b); p. 3, the paragraph on Study 2",
   "When their party controls 60 percent of seats (compared with 40 percent), Republicans prefer a candidate who is more conservative. When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a candidate who is less liberal. Surprisingly (to me at least), subjects of both parties want more moderate candidates when the Republicans are in the majority and more extreme candidates when the Democrats are in the majority.",
-  NA_character_,
-  str_glue("Figure 1(b) comes from the book's 2014 survey, in which the seat shares were randomized (question 58), and reproduces within rounding from the review's own script, which is in the project's files and was not deposited. Its scale runs from 1 = Extreme Republican to 5 = Extreme Democrat. Moving from a Democratic to a Republican majority changes Republicans' preference by {interval(study_2('Republican'))} and Democrats' by {interval(study_2('Democrat'))}. So under their own party's majority Republicans lean toward the moderate end and Democrats toward the liberal end, as the third sentence and the figure say. The first two sentences state the reverse. They would agree with the figure if they read 'less conservative' and 'more liberal', and this item corrects nothing until the author confirms that wording. Both intervals cover zero. The same design in the 2018 survey (question 401), which the review does not plot, gives the signs of the first two sentences, Republicans {interval(study_2('Republican', 2018))} and Democrats {interval(study_2('Democrat', 2018))}, and those intervals cover zero too."),
+  "When their party controls 60 percent of seats (compared with 40 percent), Republicans prefer a candidate who is [[less conservative]]. When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a candidate who is [[more liberal]]. Surprisingly (to me at least), subjects of both parties want more moderate candidates when the Republicans are in the majority and more extreme candidates when the Democrats are in the majority.",
+  str_glue("Figure 1(b) comes from the book's 2014 survey, in which the seat shares were randomized (question 58), and reproduces within rounding from the review's own script, which is in the project's files and was not deposited. Its scale runs from 1 = Extreme Republican to 5 = Extreme Democrat. Moving from a Democratic to a Republican majority changes Republicans' preference by {interval(study_2('Republican'))} and Democrats' by {interval(study_2('Democrat'))}. So under their own party's majority Republicans lean toward the moderate end and Democrats toward the liberal end, as the third sentence and the figure say. The first two sentences state the reverse, and the correction reverses their direction so that all three sentences agree with the figure. Both intervals cover zero, so none of the three directions is distinguishable from no effect. The same design in the 2018 survey (question 401), which the review does not plot, gives the signs of the first two sentences, Republicans {interval(study_2('Republican', 2018))} and Democrats {interval(study_2('Democrat', 2018))}, and those intervals cover zero too."),
   "s2_republicans_more_conservative;s2_democrats_less_liberal",
   NA_character_,
 
@@ -93,7 +93,7 @@ emit_entry <- function(n) {
 }
 ```
 
-This note lists one correction and one unresolved contradiction in "The Effects of Party Cues Are Not the Effects of Partisanship," published in *Political Science Quarterly*, advance access 2 April 2025, doi [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037). Page numbers are those of the advance access version. **The unresolved item concerns the direction of the estimates in Study 2, one of the review's five experiments.** The review's argument concerns what the experiments manipulate, and it does not rest on that direction.
+This note lists two corrections to "The Effects of Party Cues Are Not the Effects of Partisanship," published in *Political Science Quarterly*, advance access 2 April 2025, doi [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037). Page numbers are those of the advance access version. **The first corrects the direction of the estimates as two sentences describe them in Study 2, one of the review's five experiments.** The review's argument concerns what the experiments manipulate, and it does not rest on that direction.
 
 The review has no deposit of its own. The survey estimates below come from the book's data, recomputed in this note's repository: the authors' UNC Dataverse release, and for Study 2 the 2014 survey file in the project's own archive. Figure 1's published values were read from the marks in the article's PDF. Panels (a), (c), and (e) reproduce from those data, using specifications inferred from the marks themselves, and panel (b) reproduces using the review's own script.
 

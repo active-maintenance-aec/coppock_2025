@@ -137,7 +137,9 @@ ground_truth <- claims |>
     value_script = NA_real_,
     match = NA_real_,
     defect_locus = case_when(
-      (!is.na(match_rewrite) & match_rewrite == 0) | (!is.na(holds) & holds == 0) ~ "unresolved",
+      # The two adverse rows are the first two Study 2 sentences, which contradict Figure 1(b) and the
+      # third sentence on the same page: the article against itself (errata entry 1).
+      (!is.na(match_rewrite) & match_rewrite == 0) | (!is.na(holds) & holds == 0) ~ "paper_internal",
       .default = NA_character_
     ),
     notes = case_when(
