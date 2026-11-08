@@ -46,8 +46,11 @@ stopifnot(abs(printed("printed_republican") - study_2("Republican")$estimate) < 
 # document, and into whatever else reads the errata_entries.csv written at the bottom of this
 # file. [[...]] marks the span that changes.
 #
-# Numbering is APPEND-ONLY once this note is published: a later finding is added at the end
-# and never interleaved.
+# Numbering follows PROCEDURES.md Stage 4b: entries are ordered by severity block (quantity;
+# description, interpretation, definition; label, float, cross_reference; wording, spelling,
+# typography; bibliographic), discovery order inside a block, and a finding that lands in an
+# earlier block renumbers the entries after it. Renumbered 2026-11-07; the old-to-new map is
+# in that day's commit message.
 #
 # Entry 1 was a note until Alex ruled on review queue row 64 (2026-11-07: correct the first two
 # sentences). No entry corrects a quantity, so corrected_values is NA throughout.
@@ -57,7 +60,7 @@ entries <- tribble(
 
   1, "description", "reading", "brief",
   "The first two sentences on Study 2 state the reverse of the third and of Figure 1(b)",
-  "published p. 2, Figure 1(b); p. 3, the paragraph on Study 2",
+  "p. 2, Figure 1(b); p. 3, the paragraph on Study 2",
   "When their party controls 60 percent of seats (compared with 40 percent), Republicans prefer a candidate who is more conservative. When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a candidate who is less liberal. Surprisingly (to me at least), subjects of both parties want more moderate candidates when the Republicans are in the majority and more extreme candidates when the Democrats are in the majority.",
   "When their party controls 60 percent of seats (compared with 40 percent), Republicans prefer a candidate who is [[less conservative]]. When their party controls 60 percent of seats (compared with 40 percent), Democrats prefer a candidate who is [[more liberal]]. Surprisingly (to me at least), subjects of both parties want more moderate candidates when the Republicans are in the majority and more extreme candidates when the Democrats are in the majority.",
   str_glue("Figure 1(b) comes from the book's 2014 survey, in which the seat shares were randomized (question 58), and reproduces within rounding from the review's own script, which is in the project's files and was not deposited. Its scale runs from 1 = Extreme Republican to 5 = Extreme Democrat. Moving from a Democratic to a Republican majority changes Republicans' preference by {interval(study_2('Republican'))} and Democrats' by {interval(study_2('Democrat'))}. So under their own party's majority Republicans lean toward the moderate end and Democrats toward the liberal end, as the third sentence and the figure say. The first two sentences state the reverse, and the correction reverses their direction so that all three sentences agree with the figure. Both intervals cover zero, so none of the three directions is distinguishable from no effect. The same design in the 2018 survey (question 401), which the review does not plot, gives the signs of the first two sentences, Republicans {interval(study_2('Republican', 2018))} and Democrats {interval(study_2('Democrat', 2018))}, and those intervals cover zero too."),
@@ -66,7 +69,7 @@ entries <- tribble(
 
   2, "wording", "reading", "brief",
   "A dropped verb in the description of Study 3",
-  "published p. 3, the paragraph on Study 3",
+  "p. 3, the paragraph on Study 3",
   "here the authors ask subjects how much they like various foods and the treatments are whether they given no cue or are told the food is one of President Trump’s or President Obama’s favorites.",
   "here the authors ask subjects how much they like various foods and the treatments are whether they [[are]] given no cue or are told the food is one of President Trump’s or President Obama’s favorites.",
   "",
@@ -103,5 +106,12 @@ walk(entries$entry, emit_entry)
 
 ```{r emit-spine}
 # The machine-readable spine. Anything else that needs these entries reads it.
+# The spine's vocabularies are closed (cleanup of 2026-11-07): a value outside them is a
+# typo, and the edition builders read these columns to shape every entry.
+stopifnot(
+  all(entries$class %in% c("quantity", "description", "interpretation", "definition", "label", "float", "cross_reference", "wording", "spelling", "typography", "bibliographic")),
+  all(entries$form %in% c("full", "brief", "note")),
+  all(entries$source %in% c("pipeline", "reading", "reference_audit", "publisher_record", "authors_archive", "proof"))
+)
 write_csv(entries, here("errata_entries.csv"))
 ```
