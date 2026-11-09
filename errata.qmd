@@ -96,7 +96,7 @@ emit_entry <- function(n) {
 }
 ```
 
-This note lists two corrections to "The Effects of Party Cues Are Not the Effects of Partisanship," published in *Political Science Quarterly*, advance access 2 April 2025, doi [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037). Page numbers are those of the advance access version. **The first corrects the direction of the estimates as two sentences describe them in Study 2, one of the review's five experiments.** The review's argument concerns what the experiments manipulate, and it does not rest on that direction.
+This note lists two corrections to "The Effects of Party Cues Are Not the Effects of Partisanship," published in *Political Science Quarterly*, advance access 2 April 2025, doi [10.1093/psquar/qqaf037](https://doi.org/10.1093/psquar/qqaf037). Page numbers are those of the advance access version. **Neither changes a conclusion of the review.** The first corrects the direction of the estimates as two sentences describe them in Study 2, one of the review's five experiments. The review's argument concerns what the experiments manipulate, and it does not rest on that direction.
 
 The review has no deposit of its own. The survey estimates below come from the book's data, recomputed in this note's repository: the authors' UNC Dataverse release, and for Study 2 the 2014 survey file in the project's own archive. Figure 1's published values were read from the marks in the article's PDF. Panels (a), (c), and (e) reproduce from those data, using specifications inferred from the marks themselves, and panel (b) reproduces using the review's own script.
 
