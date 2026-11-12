@@ -17,6 +17,12 @@
   ],
   "related_identifiers": [
     {
+      "identifier": "https://github.com/active-maintenance-aec/coppock_2025",
+      "relation": "isSupplementTo",
+      "scheme": "url",
+      "resource_type": "software"
+    },
+    {
       "identifier": "10.1093/psquar/qqaf037",
       "relation": "isSupplementTo",
       "scheme": "doi"
