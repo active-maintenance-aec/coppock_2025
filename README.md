@@ -14,6 +14,8 @@
 - [Figure verification](#figure-verification)
 - [R environment](#r-environment)
 
+**Archived at Zenodo:** [doi:10.5281/zenodo.24168326](https://doi.org/10.5281/zenodo.24168326). This DOI always resolves to the latest release of the maintained version.
+
 # Summary
 
 This repository recomputes Figure 1 and checks the prose of a four-page
