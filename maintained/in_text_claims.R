@@ -1,26 +1,31 @@
 # coppock_2025/maintained/in_text_claims.R
-# Output: printed CLAIM lines, one per published quantity
-# Depends on: maintained/output/ (run run_all.R first), ground_truth/published_claims.csv
+# Output: printed CLAIM lines, one per published quantity, and a CLAIM SUMMARY line
+# Depends on: maintained/output/ (run run_all.R first), ground_truth/published_claims.csv,
+#   errata_entries.csv, excheckr
 # Description: The second instrument. It selects each quantity from the pipeline's output cell
 #   by cell, by a path that does not run through the ground truth, and prints
-#   CLAIM <claim_id> = <value> || <label>. ground_truth/claims_gate.R runs this file and
-#   compares every line with value_rewrite. Nothing here refits a model or reads the article.
+#   CLAIM <claim_id> = <value> || [verdict] <label>. ground_truth/claims_gate.R runs this file
+#   and compares every line with value_rewrite. Nothing here refits a model or reads the
+#   article. The verdicts come from excheckr, which reads what the article prints from the
+#   extraction and which claims a published erratum corrects from the errata spine, and
+#   assert_claims() stops the run on any MISMATCH, STALE, DRIFT, or MISSING.
 
 source(here::here("maintained", "helpers.R"))
+library(excheckr)
 
 out <- function(f) read_csv(here::here("maintained", "output", f), show_col_types = FALSE)
 
-# Read for the set of claim ids and each one's printed precision, and nothing else.
-claims_meta <- read_csv(here::here("ground_truth", "published_claims.csv"),
-                        col_types = cols(.default = col_character(), needs_block = col_logical(),
-                                         digits = col_integer()))
+# Both files are read as character throughout: a reader left to guess turns "0.0970" into
+# 0.097 and loses the precision every comparison depends on.
+published <- read_csv(here::here("ground_truth", "published_claims.csv"),
+                      col_types = cols(.default = col_character()))
+errata <- read_csv(here::here("errata_entries.csv"), col_types = cols(.default = col_character()))
 
-claim <- function(claim_id, value, label) {
-  meta <- claims_meta[claims_meta$claim_id == claim_id, ]
-  stopifnot(nrow(meta) == 1, !is.na(meta$digits))
-  shown <- if (is.na(value)) "NA" else sprintf(paste0("%.", meta$digits, "f"), value)
-  cat(sprintf("CLAIM %s = %s || %s\n", claim_id, shown, label))
-}
+claim_start(published = published, errata = errata, format = "id")
+
+# The extraction's printed precision, for the two claims whose value_paper is a marker
+# rather than a number, so excheckr cannot read the precision off it.
+stated_digits <- function(id) as.integer(published$digits[published$claim_id == id])
 
 estimates <- out("figure_1_estimates.csv")
 specifications <- out("figure_1b_specifications.csv")
@@ -59,13 +64,15 @@ cue_cells <- estimates |> filter(panel %in% c("a", "e"))
 in_party <- with(cue_cells, (facet == "Democratic") == (party == "Democrat"))
 claim("abstract_cue_pattern",
       mean(if_else(in_party, cue_cells$estimate > 0, cue_cells$estimate < 0)),
-      "share of panel a and e cells with the stated sign; a summary, so no verdict")
+      "share of panel a and e cells with the stated sign; a summary, so no verdict",
+      published = NA_character_, digits = stated_digits("abstract_cue_pattern"), expect = "shape")
 
 # Introduction ----
 # "In every case where direct comparison is possible, my reanalyses arrive at the same
 # estimates as the authors"
 # covers: intro_same_estimates
-claim("intro_same_estimates", NA, "no counterpart here: the book's printed estimates are not in this repo")
+claim("intro_same_estimates", NA, "no counterpart here: the book's printed estimates are not in this repo",
+      published = NA_character_, digits = stated_digits("intro_same_estimates"), expect = "absent")
 
 # Study 1 ----
 # "we see clear evidence of the usual pattern that Republican party support cues have positive
@@ -156,7 +163,9 @@ claim("s5_cue_direction",
       "the four cells have the stated signs")
 
 # Figure 1, panels a, b, c, and e ----
-# covers: every f1_ row of the extraction. Float cells carry no quote.
+# covers: every f1_ row of the extraction. Float cells carry no quote. Each published value is
+# a position read from the PDF's marks rather than a printed number, so it is compared within
+# the same 0.0005 that build_ground_truth.R applies, not at its fourth decimal.
 figure_claims <- estimates |>
   pivot_longer(c(estimate, conf_low, conf_high), names_to = "statistic", values_to = "value") |>
   mutate(stat = recode(statistic, estimate = "est", conf_low = "low", conf_high = "high"),
@@ -164,5 +173,9 @@ figure_claims <- estimates |>
          id = str_glue("f1_{panel}_{facet_slug}_{item}_{str_to_lower(party)}_{stat}"),
          label = str_glue("Figure 1({panel}), {facet}, {item}, {party}, {statistic}"))
 walk(seq_len(nrow(figure_claims)), \(i) {
-  claim(figure_claims$id[i], figure_claims$value[i], figure_claims$label[i])
+  claim(figure_claims$id[i], figure_claims$value[i], figure_claims$label[i], tol = 0.0005)
 })
+
+# Gates ----
+assert_claims()
+invisible(claim_summary())

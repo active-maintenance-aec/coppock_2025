@@ -1,12 +1,16 @@
 # coppock_2025/run_all.R
-# Runs the reproduction in order: fetch and verify the deposit, recompute Figure 1, build the
-# ground truth, run the gate, and print the in-text claims.
+# Runs the reproduction in order: fetch and verify the deposit, recompute Figure 1, record the
+# archive, build the ground truth, run the gate, and print the in-text claims.
 
 library(here)
 here::i_am("run_all.R")
 
 source(here::here("download_original.R"))
 source(here::here("maintained", "figure_1_panels.R"))
+
+# Archive record ----
+# The deposit's Stata files are not run here; this writes the two archive tables that say so.
+source(here::here("ground_truth", "run_archive.R"), local = new.env())
 
 # Ground truth ----
 # The build ends by running ground_truth/claims_gate.R, which sources in_text_claims.R and

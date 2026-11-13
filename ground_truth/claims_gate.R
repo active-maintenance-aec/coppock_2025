@@ -25,7 +25,7 @@ ground_truth <- read_csv(
   here::here("ground_truth", "coppock_2025_ground_truth.csv"),
   col_types = cols(.default = col_character(), value_paper = col_character(),
                    value_script = col_double(), value_rewrite = col_double(),
-                   match = col_double(), match_rewrite = col_double(), holds = col_double())
+                   match = col_logical(), match_rewrite = col_logical(), holds = col_logical())
 )
 
 # The float rows of the extraction were written from figure_1_plotted.csv, and each read of the

@@ -115,5 +115,19 @@ stopifnot(
   all(entries$form %in% c("full", "brief", "note")),
   all(entries$source %in% c("pipeline", "reading", "reference_audit", "publisher_record", "authors_archive", "proof"))
 )
+
+# values_in_spans, one logical per entry: TRUE when every corrected value is the token a [[...]]
+# span of the corrected sentence prints, FALSE when one is not, and NA for an entry with no
+# values, which today is every entry. A FALSE would mean a value stored on the claim's scale
+# rather than the sentence's, which no entry here does, so it stops the render.
+in_spans <- function(values, corrected) {
+  if (is.na(values)) return(NA)
+  spans <- str_match_all(corrected, "\\[\\[(.*?)\\]\\]")[[1]][, 2]
+  all(str_trim(str_split_1(values, ";")) %in% spans)
+}
+entries <- entries |>
+  mutate(values_in_spans = map2_lgl(corrected_values, corrected, in_spans))
+stopifnot(!any(entries$values_in_spans %in% FALSE))
+
 write_csv(entries, here("errata_entries.csv"))
 ```

@@ -1,0 +1,2 @@
+float,published_numbers,covered,reproduced_by_rewrite,reproduced_by_archive,plotted,plotted_reproduced,note
+Figure 1,0,0,0,NA,114,114,"Prints no numbers on its face. plotted counts the positions read from the marks of panels (a), (b), (c), and (e), each point with its interval ends; panel (d) is not read and is not counted."

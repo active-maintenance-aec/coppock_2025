@@ -14,7 +14,10 @@
 - [Figure verification](#figure-verification)
 - [R environment](#r-environment)
 
-**Archived at Zenodo:** [doi:10.5281/zenodo.24168326](https://doi.org/10.5281/zenodo.24168326). This DOI always resolves to the latest release of the maintained version.
+**Archived at Zenodo:**
+[doi:10.5281/zenodo.24168326](https://doi.org/10.5281/zenodo.24168326).
+This DOI always resolves to the latest release of the maintained
+version.
 
 # Summary
 
@@ -76,8 +79,11 @@ rather than from this repo.
 
 The review itself has nothing to run. The book’s Stata files are in
 `original/` once fetched and were not executed. All 11 files match the
-manifest. The maintained code is a rewrite in R from the deposited
-`.dta` files, not a port of the `.do` files.
+manifest. `ground_truth/run_archive.R` records each of the 7 Stata files
+as `not_run` in both passes in `ground_truth/archive_run_status.csv`,
+and `ground_truth/archive_overwrites.csv` has no rows. The maintained
+code is a rewrite in R from the deposited `.dta` files, not a port of
+the `.do` files.
 
 # Errata
 
@@ -188,9 +194,9 @@ panel (d) would not be caught here.
 
 # R environment
 
-| Package   | Version    |
-|:----------|:-----------|
-| R         | 4.6.1      |
-| tidyverse | 2.0.0      |
-| estimatr  | 2.0.1.9000 |
-| haven     | 2.5.5      |
+| Package   | Version |
+|:----------|:--------|
+| R         | 4.6.2   |
+| tidyverse | 2.0.0   |
+| estimatr  | 2.0.1   |
+| haven     | 2.5.5   |

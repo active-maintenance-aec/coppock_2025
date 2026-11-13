@@ -1,11 +1,12 @@
 # coppock_2025/ground_truth/build_ground_truth.R
-# Output: ground_truth/coppock_2025_ground_truth.csv
+# Output: ground_truth/coppock_2025_ground_truth.csv, ground_truth/float_coverage.csv
 # Depends on: ground_truth/published_claims.csv, ground_truth/figure_1_plotted.csv,
-#   maintained/output/, ground_truth/claims_gate.R
+#   maintained/output/, errata_entries.csv, ground_truth/claims_gate.R
 # Description: Assemble the ground truth from the extraction and the pipeline's output, then
 #   run the coverage gate. The review deposits no code, and the book's Stata files were not
 #   run, so value_script and match are NA on every row. A Figure 1 value matches when the
-#   recomputation lies within the tolerance of the position read from the PDF's marks.
+#   recomputation lies within the tolerance of the position read from the PDF's marks. Both
+#   tables are written in the canonical column order of PROCEDURES.md.
 
 library(here)
 library(tidyverse)
@@ -17,6 +18,13 @@ plotted_tolerance <- 0.0005
 claims <- read_csv(here::here("ground_truth", "published_claims.csv"),
                    col_types = cols(.default = col_character(), needs_block = col_logical(),
                                     digits = col_integer()))
+
+# The extraction's digits are the precision the article prints. Wherever value_paper is a
+# number they have to be the digits it is printed with; the two rows whose value_paper is a
+# marker (approx, asserted) carry the precision the claims script prints at.
+numeric_paper <- !is.na(excheckr::claim_number(claims$value_paper))
+stopifnot(!anyNA(claims$digits),
+          all(claims$digits[numeric_paper] == excheckr::claim_digits(claims$value_paper[numeric_paper])))
 output <- \(f) read_csv(here::here("maintained", "output", f), show_col_types = FALSE)
 estimates <- output("figure_1_estimates.csv")
 specifications <- output("figure_1b_specifications.csv")
@@ -36,11 +44,10 @@ figure_rows <- plotted |>
     claim_id = str_c("f1", panel, str_replace_all(str_to_lower(facet), "[^a-z0-9]+", "_") |> str_remove("_$"),
                      item, str_to_lower(party),
                      recode(statistic, estimate = "est", conf_low = "low", conf_high = "high"), sep = "_"),
-    claim = str_glue("Figure 1({panel}), {facet}, {item}, printed {party}, {statistic}"),
     match_rewrite = as.numeric(abs(position - value_rewrite) <= plotted_tolerance),
     holds = NA_real_
   ) |>
-  select(claim_id, claim, value_rewrite, match_rewrite, holds)
+  select(claim_id, value_rewrite, match_rewrite, holds)
 
 stopifnot(nrow(figure_rows) == 114, !anyNA(figure_rows$value_rewrite))
 
@@ -93,8 +100,7 @@ descriptive_rows <- tribble(
     abs(slopes$estimate[slopes$party == "Republican"]) < abs(slopes$estimate[slopes$party == "Democrat"]),
   "s5_cue_direction", all(signs$as_expected[signs$panel == "e"])
 ) |>
-  mutate(holds = as.numeric(holds), value_rewrite = holds, match_rewrite = NA_real_,
-         claim = str_c("Descriptive: ", claim_id))
+  mutate(holds = as.numeric(holds), value_rewrite = holds, match_rewrite = NA_real_)
 
 # The abstract's summary states no scope, so it gets a share and no verdict. The claim that the
 # reanalyses match the authors' estimates is not tested here, because nothing in this repo
@@ -102,9 +108,7 @@ descriptive_rows <- tribble(
 unscored_rows <- tibble(
   claim_id = c("abstract_cue_pattern", "intro_same_estimates"),
   value_rewrite = c(mean(signs$as_expected), NA_real_),
-  holds = NA_real_, match_rewrite = NA_real_,
-  claim = c("Abstract: share of Figure 1(a) and (e) cells with the in-party and out-party signs",
-            "Introduction: the reanalyses arrive at the authors' estimates")
+  holds = NA_real_, match_rewrite = NA_real_
 )
 
 # Assembly, with the locus rule ----
@@ -132,8 +136,6 @@ ground_truth <- claims |>
   left_join(gt, by = "claim_id") |>
   mutate(
     paper_id = "coppock_2025",
-    table_figure = location,
-    claim = coalesce(claim, str_c(location, ": ", claim_id)),
     value_script = NA_real_,
     match = NA_real_,
     defect_locus = case_when(
@@ -147,9 +149,7 @@ ground_truth <- claims |>
       !needs_block ~ "No counterpart in the pipeline.",
       .default = NA_character_
     )
-  ) |>
-  select(paper_id, claim_id, table_figure, claim, claim_type, value_script, value_paper, match,
-         value_rewrite, match_rewrite, holds, defect_locus, notes)
+  )
 
 adverse <- (!is.na(ground_truth$match_rewrite) & ground_truth$match_rewrite == 0) |
   (!is.na(ground_truth$holds) & ground_truth$holds == 0)
@@ -159,6 +159,61 @@ stopifnot(all(!is.na(ground_truth$defect_locus[adverse])),
 
 # Every cell has to match, or the inferred specification no longer holds.
 stopifnot(all(ground_truth$match_rewrite[str_detect(ground_truth$claim_id, "^f1_(a|b|c|e)_")] == 1))
+
+# Disposition: what became of each defect ----
+# corrected_here is computed from the errata spine and never typed. No other judgment has been
+# made in this repo, so any other row with a locus stays NA until someone makes one.
+corrected_ids <- read_csv(here::here("errata_entries.csv"), col_types = cols(.default = col_character())) |>
+  pull(claim_ids) |>
+  discard(is.na) |>
+  str_split(";") |>
+  unlist() |>
+  str_trim()
+
+ground_truth <- ground_truth |>
+  mutate(
+    disposition = if_else(!is.na(defect_locus) & claim_id %in% corrected_ids,
+                          "corrected_here", NA_character_),
+    disposition_reason = NA_character_
+  )
+
+undisposed <- ground_truth |> filter(defect_locus == "paper_internal", is.na(disposition))
+if (nrow(undisposed) > 0) {
+  print(undisposed |> select(claim_id, location, claim))
+  stop(str_glue("{nrow(undisposed)} paper_internal rows carry no disposition."))
+}
+print(ground_truth |> filter(!is.na(defect_locus)) |> count(defect_locus, disposition))
+
+# Float coverage ----
+# The article has one float. Figure 1 prints no number on its face, so published_numbers,
+# covered, and reproduced_by_rewrite are zero. What it carries is plotted positions, and the
+# ones counted are those read from the PDF for panels (a), (b), (c), and (e); panel (d) is not
+# read (README, Figure verification). The archive was not run, so reproduced_by_archive is NA.
+figure_cells <- ground_truth |> filter(claim_id %in% figure_rows$claim_id)
+stopifnot(nrow(figure_cells) == nrow(figure_rows), all(str_starts(figure_cells$location, "Figure 1\\(")))
+
+float_coverage <- tibble(
+  float = "Figure 1",
+  published_numbers = 0L,
+  covered = 0L,
+  reproduced_by_rewrite = 0L,
+  reproduced_by_archive = NA_integer_,
+  plotted = nrow(figure_cells),
+  plotted_reproduced = sum(figure_cells$match_rewrite == 1),
+  note = str_c("Prints no numbers on its face. plotted counts the positions read from the marks ",
+               "of panels (a), (b), (c), and (e), each point with its interval ends; panel (d) ",
+               "is not read and is not counted.")
+)
+
+write_csv(float_coverage, here::here("ground_truth", "float_coverage.csv"))
+print(float_coverage, width = 200)
+
+# The ground truth, in the canonical column order ----
+ground_truth <- ground_truth |>
+  mutate(across(c(match, match_rewrite, holds), as.logical)) |>
+  select(paper_id, claim_id, location, claim_type, claim, value_paper, digits, value_script,
+         match, value_rewrite, match_rewrite, holds, defect_locus, disposition,
+         disposition_reason, notes)
 
 write_csv(ground_truth, here::here("ground_truth", "coppock_2025_ground_truth.csv"), na = "NA")
 

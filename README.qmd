@@ -30,7 +30,7 @@ gt <- read_csv(
   here::here("ground_truth", "coppock_2025_ground_truth.csv"),
   col_types = cols(.default = col_character(), value_paper = col_character(),
                    value_script = col_double(), value_rewrite = col_double(),
-                   match = col_double(), match_rewrite = col_double(), holds = col_double())
+                   match = col_logical(), match_rewrite = col_logical(), holds = col_logical())
 )
 
 plotted <- gt |>
@@ -43,6 +43,7 @@ fit <- function(panels, statistic_name) {
 }
 
 descriptive <- gt |> filter(claim_type == "descriptive", !is.na(holds))
+archive <- read_csv(here::here("ground_truth", "archive_run_status.csv"), show_col_types = FALSE)
 specifications <- read_csv(here::here("maintained", "output", "figure_1b_specifications.csv"),
                            show_col_types = FALSE)
 ```
@@ -79,7 +80,7 @@ The 2018 survey holds free-text responses in `Q149`, one of which includes a res
 
 # Original archive reproducibility
 
-The review itself has nothing to run. The book's Stata files are in `original/` once fetched and were not executed. All 11 files match the manifest. The maintained code is a rewrite in R from the deposited `.dta` files, not a port of the `.do` files.
+The review itself has nothing to run. The book's Stata files are in `original/` once fetched and were not executed. All 11 files match the manifest. `ground_truth/run_archive.R` records each of the `r n_distinct(archive$script)` Stata files as `not_run` in both passes in `ground_truth/archive_run_status.csv`, and `ground_truth/archive_overwrites.csv` has no rows. The maintained code is a rewrite in R from the deposited `.dta` files, not a port of the `.do` files.
 
 # Errata
 
