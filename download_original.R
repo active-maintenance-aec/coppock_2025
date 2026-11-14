@@ -39,10 +39,21 @@ survey_2014_source <- file.path(
   "~/Library/CloudStorage/Dropbox/archived_projects/coppock_2025/original_materials",
   "2014 UML YouGov Survey", survey_2014
 )
-if (!file.exists(here::here("original", survey_2014))) {
-  stopifnot(file.copy(path.expand(survey_2014_source), here::here("original", survey_2014)))
+# The CI runner cannot reach that archive, so there the copy is skipped and said so. A missing
+# source anywhere else still stops the script.
+survey_2014_available <- Sys.getenv("CI") != "true" || file.exists(here::here("original", survey_2014))
+
+if (survey_2014_available) {
+  if (!file.exists(here::here("original", survey_2014))) {
+    stopifnot(file.copy(path.expand(survey_2014_source), here::here("original", survey_2014)))
+  }
+  stopifnot(unname(tools::md5sum(here::here("original", survey_2014))) == "840f103137191d70bfd192be2591b071")
+} else {
+  print(str_glue("CI: the 2014 YouGov survey is private and not distributed, so it is not copied. ",
+                 "maintained/figure_1_panels.R is skipped, and the three files it writes ",
+                 "(figure_1_estimates.csv, figure_1b_specifications.csv, figure_1d_slopes.csv) ",
+                 "stay as committed. The ground truth and the claims gate read those files."))
 }
-stopifnot(unname(tools::md5sum(here::here("original", survey_2014))) == "840f103137191d70bfd192be2591b071")
 
 verified <- planned |>
   mutate(md5_ok = unname(tools::md5sum(path)) == md5_served,

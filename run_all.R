@@ -6,7 +6,12 @@ library(here)
 here::i_am("run_all.R")
 
 source(here::here("download_original.R"))
-source(here::here("maintained", "figure_1_panels.R"))
+# Figure 1 needs the private 2014 survey, which download_original.R flags as unavailable on CI.
+if (survey_2014_available) {
+  source(here::here("maintained", "figure_1_panels.R"))
+} else {
+  print("Skipped maintained/figure_1_panels.R: the private 2014 survey is not available on CI.")
+}
 
 # Archive record ----
 # The deposit's Stata files are not run here; this writes the two archive tables that say so.
